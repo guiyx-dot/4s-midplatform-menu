@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4S 中台菜单总表</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f3f4f6;
+    color: #1c1c1e;
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 28px 20px 64px; }
+  h1 { font-size: 24px; font-weight: 650; margin: 0 0 8px; letter-spacing: -0.02em; }
+  .lead { color: #5c5c66; margin: 0 0 18px; }
+  .stats { display: flex; gap: 28px; margin: 0 0 18px; }
+  .stat b { display: block; font-size: 28px; font-weight: 650; letter-spacing: -0.03em; }
+  .stat span { color: #6b6b76; font-size: 13px; }
+  .stat.call b { color: #1d4f91; }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  button {
+    border: 1px solid #d7d7de;
+    background: #fff;
+    color: #1c1c1e;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  button.on { background: #1c1c1e; color: #fff; border-color: #1c1c1e; }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .mod {
+    border: 1px solid #e4e4ea;
+    border-radius: 8px;
+    background: #fff;
+    padding: 2px 10px 4px;
+  }
+  .mod.has-call { background: rgba(70, 130, 220, 0.12); }
+  .head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    background: transparent;
+    border-radius: 6px;
+    padding: 8px 4px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .chev { width: 14px; color: #6b6b76; flex: none; }
+  .name { font-weight: 600; }
+  .count { color: #6b6b76; font-size: 13px; }
+  .sum { margin-left: auto; color: #6b6b76; font-size: 13px; font-weight: 400; }
+  .body { display: none; padding: 4px 4px 8px 22px; }
+  .mod.open .body { display: block; }
+  .row, .cols {
+    display: grid;
+    grid-template-columns: 180px 1fr 72px;
+    gap: 12px;
+    align-items: start;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .cols { color: #8a8a94; font-size: 13px; padding-bottom: 6px; }
+  .row.skip { background: #fff; }
+  .desc { color: #5c5c66; }
+  .foot { margin-top: 16px; color: #8a8a94; font-size: 13px; }
+  @media (max-width: 640px) {
+    .row, .cols { grid-template-columns: 1fr; gap: 2px; }
+    .cols { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>4S 中台菜单总表</h1>
+  <p class="lead">中台 28 个一级、106 个二级全部保留。点一级展开，里面是逐条二级和功能说明。</p>
+  <div class="stats">
+    <div class="stat call"><b id="n-call"></b><span>4S 调用</span></div>
+    <div class="stat"><b id="n-skip"></b><span>4S 不调用</span></div>
+  </div>
+  <div class="tools" id="tools"></div>
+  <div class="list" id="list"></div>
+  <p class="foot">来源：2026-09-29 中台侧栏。有调用的一级为淡蓝，整组不调用为白底。拆开的一级里，不调用的二级单独留白。</p>
+</main>
+<script>
+const ITEMS = [{"l1": "用户管理", "l2": "用户配置", "tag": "4S不调用", "desc": "维护后台用户账号"}, {"l1": "用户管理", "l2": "组织机构配置", "tag": "4S不调用", "desc": "维护组织架构"}, {"l1": "用户管理", "l2": "注销管理", "tag": "4S不调用", "desc": "处理账号注销"}, {"l1": "功能权限", "l2": "角色管理", "tag": "4S不调用", "desc": "配置后台角色"}, {"l1": "功能权限", "l2": "权限配置", "tag": "4S不调用", "desc": "给角色分配功能权限"}, {"l1": "功能权限", "l2": "角色模板管理", "tag": "4S不调用", "desc": "用模板批量生成角色"}, {"l1": "功能权限", "l2": "操作指引配置", "tag": "4S不调用", "desc": "配置页面上的操作引导"}, {"l1": "数据权限", "l2": "用户组", "tag": "4S不调用", "desc": "按组划定能看到的数据范围"}, {"l1": "数据权限", "l2": "权限配置", "tag": "4S不调用", "desc": "配置数据范围，和功能权限不是同一套"}, {"l1": "权益中心", "l2": "权益管理", "tag": "4S调用", "desc": "维护权益主数据，如金、券"}, {"l1": "权益中心", "l2": "权益类目", "tag": "4S调用", "desc": "维护权益分类"}, {"l1": "商品中心", "l2": "商品管理", "tag": "4S调用", "desc": "把权益包装成可分配给商户的商品"}, {"l1": "商品中心", "l2": "商品类目", "tag": "4S调用", "desc": "维护商品分类"}, {"l1": "商户中心", "l2": "商户管理", "tag": "4S调用", "desc": "维护商户主数据"}, {"l1": "商户中心", "l2": "商户商品配置", "tag": "4S调用", "desc": "把商品分配给商户"}, {"l1": "商户中心", "l2": "商户余额管理", "tag": "4S调用", "desc": "查看商户余额"}, {"l1": "商户中心", "l2": "商户账户管理", "tag": "4S不调用", "desc": "维护商户资金账户"}, {"l1": "商户中心", "l2": "品牌管理", "tag": "4S不调用", "desc": "维护商户品牌"}, {"l1": "商户中心", "l2": "标签管理", "tag": "4S不调用", "desc": "给商户打标签"}, {"l1": "营销中心", "l2": "活动管理", "tag": "4S不调用", "desc": "配置营销活动"}, {"l1": "营销中心", "l2": "活动发放记录", "tag": "4S不调用", "desc": "查看活动发出的记录"}, {"l1": "结算中心", "l2": "权益发放记录", "tag": "4S调用", "desc": "查看权益发放流水"}, {"l1": "结算中心", "l2": "权益核销记录", "tag": "4S调用", "desc": "查看权益核销流水"}, {"l1": "结算中心", "l2": "支付宝消费分发放记录", "tag": "4S调用", "desc": "查看消费分发放流水"}, {"l1": "结算中心", "l2": "主体管理", "tag": "4S不调用", "desc": "维护结算用的公司主体"}, {"l1": "结算中心", "l2": "项目管理", "tag": "4S不调用", "desc": "维护结算项目"}, {"l1": "结算中心", "l2": "回款明细管理", "tag": "4S不调用", "desc": "查看回款明细"}, {"l1": "结算中心", "l2": "发票列表", "tag": "4S不调用", "desc": "查看和处理发票"}, {"l1": "结算中心", "l2": "应收单管理", "tag": "4S不调用", "desc": "管理应收单"}, {"l1": "结算中心", "l2": "成本管理", "tag": "4S不调用", "desc": "查看成本"}, {"l1": "结算中心", "l2": "商户开票额度", "tag": "4S不调用", "desc": "维护商户可开票额度"}, {"l1": "结算中心", "l2": "开票内容维护", "tag": "4S不调用", "desc": "维护开票项目和票面内容"}, {"l1": "结算中心", "l2": "线下退回数据导入", "tag": "4S不调用", "desc": "导入线下退回数据"}, {"l1": "内容中心", "l2": "banner管理", "tag": "4S不调用", "desc": "配置页面横幅"}, {"l1": "内容中心", "l2": "文章管理", "tag": "4S不调用", "desc": "发布和编辑文章"}, {"l1": "内容中心", "l2": "通告栏管理", "tag": "4S不调用", "desc": "配置通告栏"}, {"l1": "内容中心", "l2": "消息管理", "tag": "4S不调用", "desc": "管理站内消息"}, {"l1": "内容中心", "l2": "发帖管理", "tag": "4S不调用", "desc": "管理帖子"}, {"l1": "通知中心", "l2": "短信组管理", "tag": "4S不调用", "desc": "配置短信发送分组"}, {"l1": "数据中心", "l2": "出行业务数据", "tag": "4S不调用", "desc": "查看出行业务数据"}, {"l1": "数据中心", "l2": "出行团队管理", "tag": "4S不调用", "desc": "管理出行团队"}, {"l1": "数据中心", "l2": "金券统计指标", "tag": "4S不调用", "desc": "查看金券汇总指标"}, {"l1": "数据中心", "l2": "金券明细数据", "tag": "4S不调用", "desc": "查看金券逐笔明细"}, {"l1": "数据中心", "l2": "毛利明细数据", "tag": "4S不调用", "desc": "查看毛利逐笔明细"}, {"l1": "数据中心", "l2": "毛利数据报表", "tag": "4S不调用", "desc": "查看毛利汇总报表"}, {"l1": "数据中心", "l2": "小程序统计", "tag": "4S不调用", "desc": "查看小程序访问和转化"}, {"l1": "支付宝消费分", "l2": "支付宝消费分账户", "tag": "4S调用", "desc": "管理消费分账户"}, {"l1": "支付宝消费分", "l2": "支付宝消费分明细", "tag": "4S调用", "desc": "查看消费分流水"}, {"l1": "支付宝消费分", "l2": "场景钱包明细", "tag": "4S不调用", "desc": "查看场景钱包流水"}, {"l1": "支付宝消费分", "l2": "支付宝消费分凭证初审", "tag": "4S调用", "desc": "初审消费分凭证"}, {"l1": "支付宝消费分", "l2": "支付宝消费分转出审批", "tag": "4S不调用", "desc": "旧的转出审批入口，已不用"}, {"l1": "支付宝消费分", "l2": "收款账号维护", "tag": "4S调用", "desc": "维护这条产品的打款收款账号"}, {"l1": "支付宝消费分", "l2": "电子凭证", "tag": "4S调用", "desc": "管理电子凭证"}, {"l1": "支付宝消费分", "l2": "线下打款数据", "tag": "4S调用", "desc": "查看线下打款结果"}, {"l1": "权益供应路由(新)", "l2": "权益供应配置(新)", "tag": "4S调用", "desc": "配置供应商和供应规则"}, {"l1": "权益供应路由(新)", "l2": "权益供应余额", "tag": "4S调用", "desc": "查看供应商剩余额度"}, {"l1": "权益供应路由(新)", "l2": "权益供应单人限额", "tag": "4S调用", "desc": "控制单人供应上限"}, {"l1": "权益供应路由(新)", "l2": "权益供应总限额", "tag": "4S调用", "desc": "控制供应总额上限"}, {"l1": "权益供应路由(新)", "l2": "支付宝消费分转出审批", "tag": "4S调用", "desc": "审批消费分转出，现行入口"}, {"l1": "权益供应路由(新)", "l2": "权益明细", "tag": "4S调用", "desc": "查看供应侧权益明细"}, {"l1": "权益供应路由", "l2": "权益供应规则", "tag": "4S不调用", "desc": "旧版供应规则"}, {"l1": "权益供应路由", "l2": "权益额度记录", "tag": "4S不调用", "desc": "旧版额度流水"}, {"l1": "权益供应路由", "l2": "商户配置管理", "tag": "4S不调用", "desc": "旧版商户供应配置"}, {"l1": "权益供应路由", "l2": "权益供应配置", "tag": "4S不调用", "desc": "旧版供应配置"}, {"l1": "权益供应路由", "l2": "权益供应限额", "tag": "4S不调用", "desc": "旧版供应限额"}, {"l1": "因公付", "l2": "额度明细", "tag": "4S调用", "desc": "查看因公付额度流水"}, {"l1": "麦的好", "l2": "账户余额", "tag": "4S调用", "desc": "查看麦的好账户余额"}, {"l1": "麦的好", "l2": "交易明细", "tag": "4S调用", "desc": "查看麦的好交易流水"}, {"l1": "麦的好", "l2": "麦粒发放处理", "tag": "4S调用", "desc": "处理麦粒发放"}, {"l1": "财务管理", "l2": "充值记录", "tag": "4S不调用", "desc": "查看商户充值记录"}, {"l1": "财务管理", "l2": "充值对账单", "tag": "4S不调用", "desc": "核对商户充值账单"}, {"l1": "财务管理", "l2": "奖励账户管理", "tag": "4S不调用", "desc": "管理商户奖励金账户"}, {"l1": "财务管理", "l2": "提现管理", "tag": "4S不调用", "desc": "处理提现出金"}, {"l1": "财务管理", "l2": "商户入账工单", "tag": "4S不调用", "desc": "处理商户入账"}, {"l1": "账户管理", "l2": "灵犀账户管理", "tag": "4S不调用", "desc": "管理灵犀账户"}, {"l1": "账户管理", "l2": "收款账户管理", "tag": "4S不调用", "desc": "维护通用收款账户"}, {"l1": "账户管理", "l2": "人群圈选", "tag": "4S不调用", "desc": "按条件圈选人群"}, {"l1": "审批管理", "l2": "审批流配置", "tag": "4S调用", "desc": "配置审批流程"}, {"l1": "审批管理", "l2": "业务标识管理", "tag": "4S调用", "desc": "维护审批用的业务标识"}, {"l1": "审批管理", "l2": "表单组件管理", "tag": "4S调用", "desc": "配置审批表单组件"}, {"l1": "审批管理", "l2": "审批中心", "tag": "4S调用", "desc": "处理和查看审批单"}, {"l1": "线索管理", "l2": "线索提报入口", "tag": "4S调用", "desc": "提交线索"}, {"l1": "线索管理", "l2": "线索池", "tag": "4S调用", "desc": "查看和跟进线索"}, {"l1": "线索管理", "l2": "自定义表单", "tag": "4S调用", "desc": "配置线索表单"}, {"l1": "客服管理", "l2": "工单中心", "tag": "4S调用", "desc": "处理客服工单"}, {"l1": "小程序管理", "l2": "4S渠道管理", "tag": "4S调用", "desc": "管理 4S 店渠道"}, {"l1": "小程序管理", "l2": "首页配置", "tag": "4S调用", "desc": "配置小程序首页"}, {"l1": "小程序管理", "l2": "推广任务配置", "tag": "4S调用", "desc": "配置推广任务"}, {"l1": "小程序管理", "l2": "推广任务领取记录", "tag": "4S调用", "desc": "查看推广任务领取情况"}, {"l1": "小程序管理", "l2": "车辆预约记录", "tag": "4S调用", "desc": "查看到店车辆预约"}, {"l1": "小程序管理", "l2": "车辆预约推广记录", "tag": "4S调用", "desc": "查看预约带来的推广"}, {"l1": "积分商城", "l2": "用户积分", "tag": "4S调用", "desc": "查看用户通用积分余额和发放批次"}, {"l1": "积分商城", "l2": "兑换订单", "tag": "4S调用", "desc": "查看积分兑换订单，可整单退"}, {"l1": "商城管理", "l2": "商城商品列表", "tag": "4S不调用", "desc": "维护商城商品"}, {"l1": "商城管理", "l2": "商城商品类目", "tag": "4S不调用", "desc": "维护商城商品分类"}, {"l1": "商城管理", "l2": "商城商品规格", "tag": "4S不调用", "desc": "维护商城商品规格"}, {"l1": "商城管理", "l2": "商城商品订单", "tag": "4S不调用", "desc": "查看商城订单"}, {"l1": "安全发", "l2": "主账户管理", "tag": "4S不调用", "desc": "管理安全发主账户"}, {"l1": "安全发", "l2": "人资签约管理", "tag": "4S不调用", "desc": "管理人资签约"}, {"l1": "安全发", "l2": "进件单管理", "tag": "4S不调用", "desc": "处理进件单"}, {"l1": "安全发", "l2": "人资记账本管理", "tag": "4S不调用", "desc": "管理人资记账本"}, {"l1": "安全发", "l2": "人资付款记录", "tag": "4S不调用", "desc": "查看人资付款记录"}, {"l1": "直充发放管理", "l2": "直充发放列表", "tag": "4S不调用", "desc": "查看直连供应商的发放记录"}, {"l1": "系统安全", "l2": "操作日志", "tag": "4S不调用", "desc": "查看后台操作记录"}, {"l1": "上传下载中心", "l2": "下载中心", "tag": "4S不调用", "desc": "下载导出文件"}, {"l1": "上传下载中心", "l2": "上传中心", "tag": "4S不调用", "desc": "查看上传任务"}];
+let view = "全部";
+let fold = "closed";
+
+function summary(items) {
+  const call = items.filter(i => i.tag === "4S调用").length;
+  const skip = items.length - call;
+  if (call === 0) return "整组不调用";
+  if (skip === 0) return "整组调用";
+  return "调用 " + call + " · 不调用 " + skip;
+}
+
+function groupsOf() {
+  const visible = view === "全部" ? ITEMS : ITEMS.filter(i => i.tag === view);
+  const groups = [];
+  for (const item of visible) {
+    const last = groups[groups.length - 1];
+    if (last && last.l1 === item.l1) last.items.push(item);
+    else groups.push({ l1: item.l1, items: [item] });
+  }
+  return groups;
+}
+
+function renderTools() {
+  const specs = [
+    ["全部", "总表", "view"],
+    ["4S调用", "只看调用", "view"],
+    ["4S不调用", "只看不调用", "view"],
+    ["closed", "全部收起", "fold"],
+    ["call", "展开要调用的", "fold"],
+    ["all", "全部展开", "fold"],
+  ];
+  document.getElementById("tools").innerHTML = specs.map(([value, label, kind]) => {
+    const on = (kind === "view" ? view : fold) === value;
+    return '<button class="' + (on ? "on" : "") + '" data-kind="' + kind + '" data-value="' + value + '">' + label + '</button>';
+  }).join("");
+}
+
+function render() {
+  document.getElementById("n-call").textContent = ITEMS.filter(i => i.tag === "4S调用").length;
+  document.getElementById("n-skip").textContent = ITEMS.filter(i => i.tag === "4S不调用").length;
+  renderTools();
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  for (const group of groupsOf()) {
+    const call = group.items.some(i => i.tag === "4S调用");
+    const open = fold === "all" || (fold === "call" && call);
+    const mod = document.createElement("section");
+    mod.className = "mod" + (call ? " has-call" : "") + (open ? " open" : "");
+    const rows = group.items.map(item => {
+      const called = item.tag === "4S调用";
+      return '<div class="row' + (called ? "" : " skip") + '"><div>' + item.l2 + '</div><div class="desc">' + item.desc + '</div><div>' + (called ? "调用" : "不调用") + '</div></div>';
+    }).join("");
+    mod.innerHTML =
+      '<button class="head" type="button"><span class="chev">' + (open ? "▾" : "▸") + '</span><span class="name">' + group.l1 + '</span><span class="count">' + group.items.length + '</span><span class="sum">' + summary(group.items) + '</span></button>' +
+      '<div class="body"><div class="cols"><span>二级</span><span>功能</span><span>4S</span></div>' + rows + '</div>';
+    mod.querySelector(".head").addEventListener("click", () => {
+      const next = !mod.classList.contains("open");
+      mod.classList.toggle("open", next);
+      mod.querySelector(".chev").textContent = next ? "▾" : "▸";
+    });
+    list.appendChild(mod);
+  }
+}
+
+document.getElementById("tools").addEventListener("click", (event) => {
+  const btn = event.target.closest("button");
+  if (!btn) return;
+  if (btn.dataset.kind === "view") view = btn.dataset.value;
+  else fold = btn.dataset.value;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
