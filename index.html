@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>4S 中台菜单总表</title>
+<title>冗余功能清单</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -16,10 +16,19 @@
   main { max-width: 920px; margin: 0 auto; padding: 28px 20px 64px; }
   h1 { font-size: 24px; font-weight: 650; margin: 0 0 8px; letter-spacing: -0.02em; }
   .lead { color: #5c5c66; margin: 0 0 18px; }
-  .stats { display: flex; gap: 28px; margin: 0 0 18px; }
+  .stats { display: flex; align-items: flex-end; gap: 28px; margin: 0 0 18px; }
   .stat b { display: block; font-size: 28px; font-weight: 650; letter-spacing: -0.03em; }
   .stat span { color: #6b6b76; font-size: 13px; }
   .stat.call b { color: #1d4f91; }
+  .legend {
+    border: 1px solid #d7d7de;
+    background: #fff;
+    color: #1c1c1e;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
   .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   button {
     border: 1px solid #d7d7de;
@@ -67,11 +76,12 @@
 </head>
 <body>
 <main>
-  <h1>4S 中台菜单总表</h1>
+  <h1>冗余功能清单</h1>
   <p class="lead">中台 28 个一级、106 个二级全部保留。点一级展开，里面是逐条二级和功能说明。</p>
   <div class="stats">
-    <div class="stat call"><b id="n-call"></b><span>4S 调用</span></div>
-    <div class="stat"><b id="n-skip"></b><span>4S 不调用</span></div>
+    <div class="stat call"><b id="n-call"></b><span>4S调用</span></div>
+    <div class="stat"><b id="n-skip"></b><span>4S不调用</span></div>
+    <span class="legend">公募部分</span>
   </div>
   <div class="tools" id="tools"></div>
   <div class="list" id="list"></div>
@@ -103,7 +113,7 @@ function groupsOf() {
 
 function renderTools() {
   const specs = [
-    ["全部", "总表", "view"],
+    ["全部", "4S业务", "view"],
     ["4S调用", "只看调用", "view"],
     ["4S不调用", "只看不调用", "view"],
     ["closed", "全部收起", "fold"],
